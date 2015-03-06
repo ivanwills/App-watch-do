@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-# Created on: 2015-03-07 08:21:28
-# Create by:  Ivan Wills
+# Created on: 2014-01-10 09:11:44
+# Create by:  dev
 # $Id$
 # $Revision$, $HeadURL$, $Date$
 # $Revision$, $Source$, $Date$
@@ -9,9 +9,7 @@
 use strict;
 use warnings;
 use version;
-use Scalar::Util;
-use List::Util;
-#use List::MoreUtils;
+use Carp;
 use Getopt::Long;
 use Pod::Usage;
 use Data::Dumper qw/Dumper/;
@@ -23,127 +21,155 @@ our $VERSION = version->new('0.0.1');
 my ($name)   = $PROGRAM_NAME =~ m{^.*/(.*?)$}mxs;
 
 my %option = (
-	out     => undef,
-	verbose => 0,
-	man     => 0,
-	help    => 0,
-	VERSION => 0,
+    verbose => 0,
+    man     => 0,
+    help    => 0,
+    VERSION => 0,
 );
 
 if ( !@ARGV ) {
-	pod2usage( -verbose => 1 );
+    pod2usage( -verbose => 1 );
 }
 
 main();
 exit 0;
 
 sub main {
-	Getopt::Long::Configure('bundling');
-	GetOptions(
-		\%option,
-		'out|o=s',
-		'verbose|v+',
-		'man',
-		'help',
-		'VERSION!',
-	) or pod2usage(2);
 
-	if ( $option{'VERSION'} ) {
-		print "$name Version = $VERSION\n";
-		exit 1;
-	}
-	elsif ( $option{'man'} ) {
-		pod2usage( -verbose => 2 );
-	}
-	elsif ( $option{'help'} ) {
-		pod2usage( -verbose => 1 );
-	}
-	
-	# do stuff here
+    Getopt::Long::Configure('bundling');
+    GetOptions(
+        \%option,
+        'first|f!',
+        'watch|w=s@',
+        'git|g',
+        'test|t!',
+        'verbose|v+',
+        'man',
+        'help',
+        'version',
+    ) or pod2usage(2);
 
-	return;
+    if ( $option{'version'} ) {
+        print "$name Version = $VERSION\n";
+        exit 1;
+    }
+    elsif ( $option{'man'} ) {
+        pod2usage( -verbose => 2 );
+    }
+    elsif ( $option{'help'} ) {
+        pod2usage( -verbose => 1 );
+    }
+    elsif ( !$option{watch} && !$option{git} ) {
+        warn "You must specify files to watch!\n";
+        pod2usage( -verbose => 1 );
+    }
+    elsif ( !@ARGV ) {
+        warn "No command to run!\n";
+        pod2usage( -verbose => 1 );
+    }
+
+    # do stuff here
+    my %watch;
+    my $vcs;
+    if ( $option{watch} ) {
+        %watch = map { $_ => modified($_) } @{ $option{watch} };
+    }
+    if ( $option{git} ) {
+        require VCS::Which;
+        $vcs = VCS::Which->new;
+    }
+
+    my $cmd   = join ' ', @ARGV;
+    my $count = 0;
+    while (1) {
+        my $changed = 0;
+        my $message = '';
+        $count++;
+        if ( $vcs && ( !%watch || $count % 5 == 0 ) ) {
+            my $status = $vcs->status('.');
+            %watch = ( %watch, map { $_ => modified($_) } map { @{ $status->{$_} } } grep {$_ ne 'merge'} keys %{ $status } );
+        }
+
+        for my $name (keys %watch) {
+            my $mod = modified($name) || 0;
+            if ( !$watch{$name} ) {
+                if ($mod) {
+                    $watch{$name} = $mod;
+                }
+                else {
+                    delete $watch{$name};
+                }
+            }
+            if ( $watch{$name} ne $mod ) {
+                $message .= "\n$name has changed, running command\n" if $option{verbose};
+                $message .= "\tModified time $mod (was $watch{$name})\n" if $option{verbose} > 1;
+                $changed = 1;
+            }
+        }
+
+        if ( $changed || ( $option{first} && $count == 1 ) ) {
+            print "\n";
+            warn "--\n$cmd\n--\n" if $option{verbose} > 2;
+            system $cmd if !$option{test};
+            warn $message if $message;
+            print {*STDERR} "\a\n";
+        }
+
+        # reset modified times (incase $cmd further modifies those files)
+        for my $name (keys %watch) {
+            $watch{$name} = modified($name);
+        }
+
+        sleep 1;
+        print {*STDERR} '.';
+    }
+
+    return;
+}
+
+sub modified {
+    confess "No file passed!\n" if !$_[0];
+    return -e $_[0] && (stat $_[0])[9];
 }
 
 __DATA__
 
 =head1 NAME
 
-App-watchdo/bin/app-watchdo - <One-line description of commands purpose>
+watch-do - Run a command when watched files change
 
 =head1 VERSION
 
-This documentation refers to App::watchdo version 0.0.1
+This documentation refers to watch-do version 0.0.1
 
 =head1 SYNOPSIS
 
-   App::watchdo [option]
+   watch-do [option]
+   watch-do -w file1 [-w file2 ...] [--] cmd
 
  OPTIONS:
-  -o --other         other option
+  cmd               Command to run when file changes
+  -w --watch[=]file File to be watched for changes
+  -g --git          Use git to find what to watch (ie monitor files that git see have changed)
 
-  -v --verbose       Show more detailed option
-     --version       Prints the version information
-     --help          Prints this help information
-     --man           Prints the full documentation for App::watchdo
+  -v --verbose      Show more detailed option
+     --version      Prints the version information
+     --help         Prints this help information
+     --man          Prints the full documentation for watch-do
 
 =head1 DESCRIPTION
 
-A full description of the module and its features.
-
-May include numerous subsections (i.e., =head2, =head3, etc.).
-
 =head1 SUBROUTINES/METHODS
-
-A separate section listing the public components of the module's interface.
-
-These normally consist of either subroutines that may be exported, or methods
-that may be called on objects belonging to the classes that the module
-provides.
-
-Name the section accordingly.
-
-In an object-oriented module, this section should begin with a sentence (of the
-form "An object of this class represents ...") to give the reader a high-level
-context to help them understand the methods that are subsequently described.
 
 =head1 DIAGNOSTICS
 
-A list of every error and warning message that the module can generate (even
-the ones that will "never happen"), with a full explanation of each problem,
-one or more likely causes, and any suggested remedies.
-
 =head1 CONFIGURATION AND ENVIRONMENT
-
-A full explanation of any configuration system(s) used by the module, including
-the names and locations of any configuration files, and the meaning of any
-environment variables or properties that can be set. These descriptions must
-also include details of any configuration language used.
 
 =head1 DEPENDENCIES
 
-A list of all of the other modules that this module relies upon, including any
-restrictions on versions, and an indication of whether these required modules
-are part of the standard Perl distribution, part of the module's distribution,
-or must be installed separately.
-
 =head1 INCOMPATIBILITIES
 
-A list of any modules that this module cannot be used in conjunction with.
-This may be due to name conflicts in the interface, or competition for system
-or program resources, or due to internal limitations of Perl (for example, many
-modules that use source code filters are mutually incompatible).
-
 =head1 BUGS AND LIMITATIONS
-
-A list of known problems with the module, together with some indication of
-whether they are likely to be fixed in an upcoming release.
-
-Also, a list of restrictions on the features the module does provide: data types
-that cannot be handled, performance issues and the circumstances in which they
-may arise, practical limitations on the size of data sets, special cases that
-are not (yet) handled, etc.
-
-The initial template usually just has:
 
 There are no known bugs in this module.
 
@@ -157,7 +183,7 @@ Ivan Wills - (ivan.wills@gmail.com)
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 Ivan Wills (14 Mullion Close, Hornsby Heights, NSW Australia 2077).
+Copyright (c) 2014 Ivan Wills (14 Mullion Close, Hornsby Heights, NSW Australia 2077).
 All rights reserved.
 
 This module is free software; you can redistribute it and/or modify it under
