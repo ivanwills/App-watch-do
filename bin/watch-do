@@ -115,7 +115,7 @@ sub main {
             print {*STDERR} "\a\n";
         }
 
-        # reset modified times (incase $cmd further modifies those files)
+        # reset modified times (in case $cmd further modifies those files)
         for my $name (keys %watch) {
             $watch{$name} = modified($name);
         }
