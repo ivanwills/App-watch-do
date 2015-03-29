@@ -1,5 +1,10 @@
 Revision history for App-watchdo
 
 0.0.1   2015-03-29
-        First version, released on an unsuspecting world.
-
+        Updated dependencies (Ivan Wills)
+        Fixed up tests (Ivan Wills)
+        Fixed git repo location (Ivan Wills)
+        Fixed tests (Ivan Wills)
+        Moved file from App-Useful (Ivan Wills)
+        Fixed manifest (Ivan Wills)
+        Initial commit (Ivan Wills)
