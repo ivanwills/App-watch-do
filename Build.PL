@@ -19,7 +19,7 @@ my $builder = Module::Build->new(
 	create_license     => 1,
 	meta_merge => {
 		resources => {
-			repository => 'git://github.com/ivanwills/App-watchdo.git',
+			repository => 'git://github.com/ivanwills/App-watch-do.git',
 			bugtracker => 'http://rt.cpan.org/NoAuth/Bugs.html?Dist=App::watchdo',
 		},
 	},

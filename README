@@ -1,6 +1,6 @@
 App-watch-do
 
-Installs the command watch-do that uses 
+Installs the command watch-do that uses
 
 INSTALLATION
 
@@ -33,7 +33,7 @@ You can also look for information at:
         http://search.cpan.org/dist/App-watchdo/
 
     Source Code
-        git://github.com/ivanwills/App-watchdo.git
+        git://github.com/ivanwills/App-watch-do.git
 
 COPYRIGHT AND LICENCE
 
