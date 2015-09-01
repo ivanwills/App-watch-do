@@ -81,46 +81,58 @@ sub main {
     my $cmd   = join ' ', @ARGV;
     my $count = 0;
     while (1) {
-        my $changed = 0;
         my $message = '';
+        my $changed = 0;
         $count++;
-        if ( $vcs && ( !%watch || $count % 5 == 0 ) ) {
+        if ($vcs) {
             my $status = $vcs->status('.');
-            %watch = ( %watch, map { $_ => modified($_) } map { @{ $status->{$_} } } grep {$_ ne 'merge'} keys %{ $status } );
+            %watch = (
+                (
+                    # find any new files to watch
+                    map { $_ => modified($_) }
+                    map { chomp $_; $_ }  ## no critic
+                    map { @{ $status->{$_} } }
+                    grep {$_ ne 'merge'}
+                    keys %{ $status }
+                ),
+                %watch,
+            );
         }
 
-        for my $name (keys %watch) {
-            my $mod = modified($name) || 0;
-            if ( !$watch{$name} ) {
-                if ($mod) {
-                    $watch{$name} = $mod;
+        if (%watch) {
+            for my $name (keys %watch) {
+                my $mod = modified($name) || 0;
+                if ( !$watch{$name} ) {
+                    if ($mod) {
+                        $watch{$name} = $mod;
+                    }
+                    else {
+                        delete $watch{$name};
+                    }
                 }
-                else {
-                    delete $watch{$name};
+                if ( $watch{$name} ne $mod ) {
+                    $message .= "\n$name has changed, running command\n"     if $option{verbose};
+                    $message .= "\tModified time $mod (was $watch{$name})\n" if $option{verbose} > 1;
+                    $changed = 1;
                 }
             }
-            if ( $watch{$name} ne $mod ) {
-                $message .= "\n$name has changed, running command\n" if $option{verbose};
-                $message .= "\tModified time $mod (was $watch{$name})\n" if $option{verbose} > 1;
-                $changed = 1;
+
+            if ( $changed || ( $option{first} && $count == 1 ) ) {
+                print "\n";
+                warn "--\n$cmd\n--\n" if $option{verbose} > 2;
+                system $cmd if !$option{test};
+                warn $message if $message;
+                print {*STDERR} "\a\n";
             }
-        }
 
-        if ( $changed || ( $option{first} && $count == 1 ) ) {
-            print "\n";
-            warn "--\n$cmd\n--\n" if $option{verbose} > 2;
-            system $cmd if !$option{test};
-            warn $message if $message;
-            print {*STDERR} "\a\n";
-        }
-
-        # reset modified times (in case $cmd further modifies those files)
-        for my $name (keys %watch) {
-            $watch{$name} = modified($name);
+            # reset modified times (in case $cmd further modifies those files)
+            for my $name (keys %watch) {
+                $watch{$name} = modified($name);
+            }
         }
 
         sleep 1;
-        print {*STDERR} '.';
+        print {*STDERR} '.' if !$changed;
     }
 
     return;
