@@ -1,5 +1,9 @@
 Revision history for App-watchdo
 
+0.0.4   2015-09-10
+        Updating for release of version 0.0.4
+        Fixed git watching (Ivan Wills)
+
 0.0.3   2015-08-19
         Updating for release of version 0.0.3
         Removed creation of makefile (Ivan Wills)
