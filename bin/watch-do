@@ -15,6 +15,7 @@ use Pod::Usage;
 use Data::Dumper qw/Dumper/;
 use English qw/ -no_match_vars /;
 use FindBin qw/$Bin/;
+use File::stat;
 
 our $VERSION = version->new('0.0.4');
 my ($name)   = $PROGRAM_NAME =~ m{^.*/(.*?)$}mxs;
@@ -91,10 +92,10 @@ sub main {
             %watch = (
                 (
                     # find any new files to watch
-                    map { $_ => modified($_) }
-                    map { chomp $_; $_ }  ## no critic
-                    map { @{ $status->{$_} } }
-                    grep {$_ ne 'merge'}
+                    map  { $_ => undef }
+                    map  { chomp $_; $_ }  ## no critic
+                    map  { @{ $status->{$_} } }
+                    grep { $_ ne 'merge' }
                     keys %{ $status }
                 ),
                 %watch,
@@ -102,8 +103,12 @@ sub main {
         }
 
         if (%watch) {
-            for my $name (keys %watch) {
-                my $mod = modified($name) || 0;
+            if ($option{verbose} > 1) {
+                print "\n";
+            }
+
+            for my $name (sort keys %watch) {
+                my $mod = modified($name);
                 if ( !$watch{$name} ) {
                     if ($mod) {
                         $watch{$name} = $mod;
@@ -112,7 +117,11 @@ sub main {
                         delete $watch{$name};
                     }
                 }
-                if ( $watch{$name} ne $mod ) {
+                elsif ($option{verbose} > 1) {
+                    printf "%-60s %5d (%5d) %10d (%10d)\n", $name, $mod->size, $watch{$name}->size, $mod->mtime, $watch{$name}->mtime;
+                }
+
+                if ( changed($watch{$name}, $mod) ) {
                     $message .= "\n$name has changed, running command\n"     if $option{verbose};
                     $message .= "\tModified time $mod (was $watch{$name})\n" if $option{verbose} > 1;
                     $changed = 1;
@@ -140,9 +149,17 @@ sub main {
     return;
 }
 
+sub changed {
+    my ($last, $now) = @_;
+
+    return ( $last && $now )
+        ? ( $last->mtime != $now->mtime || $last->size != $now->size )
+        : ( !$last && $now );
+}
+
 sub modified {
     confess "No file passed!\n" if !$_[0];
-    return -e $_[0] && (stat $_[0])[9];
+    return -e $_[0] && stat $_[0];
 }
 
 __DATA__
