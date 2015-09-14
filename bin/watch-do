@@ -20,6 +20,7 @@ our $VERSION = version->new('0.0.4');
 my ($name)   = $PROGRAM_NAME =~ m{^.*/(.*?)$}mxs;
 
 my %option = (
+    sleep   => 1,
     verbose => 0,
     man     => 0,
     help    => 0,
@@ -41,6 +42,7 @@ sub main {
         'first|f!',
         'watch|w=s@',
         'git|g',
+        'sleep|s=i',
         'test|t!',
         'verbose|v+',
         'man',
@@ -131,7 +133,7 @@ sub main {
             }
         }
 
-        sleep 1;
+        sleep $option{sleep};
         print {*STDERR} '.' if !$changed;
     }
 
