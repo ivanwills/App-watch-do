@@ -74,7 +74,9 @@ sub main {
     my %watch;
     my $vcs;
     if ( $option{watch} ) {
-        %watch = map { $_ => modified($_) } @{ $option{watch} };
+        %watch = map { $_ => modified($_) }
+            map { -d $_ ? recurse($_) : $_ }
+            @{ $option{watch} };
     }
     if ( $option{git} ) {
         require VCS::Which;
@@ -147,6 +149,22 @@ sub main {
     }
 
     return;
+}
+
+sub recurse {
+    my $dir = path(shift);
+    my @files;
+
+    for my $child ($dir->children) {
+        if (-d $child) {
+            push @files, recurse($child);
+        }
+        else {
+            push @files, $child;
+        }
+    }
+
+    return @files;
 }
 
 sub changed {
