@@ -16,6 +16,7 @@ use Data::Dumper qw/Dumper/;
 use English qw/ -no_match_vars /;
 use FindBin qw/$Bin/;
 use File::stat;
+use Path::Tiny;
 
 our $VERSION = version->new('0.0.4');
 my ($name)   = $PROGRAM_NAME =~ m{^.*/(.*?)$}mxs;
