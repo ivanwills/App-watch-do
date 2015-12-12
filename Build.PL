@@ -9,6 +9,7 @@ my $builder = Module::Build->new(
     dist_version_from => 'lib/App/watchdo.pm',
     requires          => {
         'perl'           => '5.006',
+        'Path::Tiny'     => '0.068',
         'VCS::Which'     => '0.5.2',
         'version'        => '0.9902',
     },
