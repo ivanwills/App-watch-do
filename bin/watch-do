@@ -18,7 +18,7 @@ use FindBin qw/$Bin/;
 use File::stat;
 use Path::Tiny;
 
-our $VERSION = version->new('0.0.4');
+our $VERSION = version->new('0.0.5');
 my ($name)   = $PROGRAM_NAME =~ m{^.*/(.*?)$}mxs;
 
 my %option = (
@@ -189,7 +189,7 @@ watch-do - Run a command when watched files change
 
 =head1 VERSION
 
-This documentation refers to watch-do version 0.0.4
+This documentation refers to watch-do version 0.0.5
 
 =head1 SYNOPSIS
 

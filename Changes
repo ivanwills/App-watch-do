@@ -1,5 +1,13 @@
 Revision history for App-watchdo
 
+0.0.5   2015-12-12
+        Updating for release of version 0.0.5
+        Added dependency to requires (Ivan Wills)
+        Added missing Path::Tiny (Ivan Wills)
+        Added recursing directories (Ivan Wills)
+        Fixed checking for git changes (Ivan Wills)
+        Made sleep time configurable (Ivan Wills)
+
 0.0.4   2015-09-10
         Updating for release of version 0.0.4
         Fixed git watching (Ivan Wills)
