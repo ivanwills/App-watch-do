@@ -95,7 +95,7 @@ sub main {
             %watch = (
                 (
                     # find any new files to watch
-                    map  { $_ => undef }
+                    map  { $_ => modified($_) }
                     map  { chomp $_; $_ }  ## no critic
                     map  { @{ $status->{$_} } }
                     grep { $_ ne 'merge' }
