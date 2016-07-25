@@ -14,16 +14,21 @@ use Data::Dumper qw/Dumper/;
 use English qw/ -no_match_vars /;
 use AnyEvent;
 use AnyEvent::Loop;
+use AnyEvent::Filesys::Notify;
 
 our $VERSION = version->new('0.0.1');
 
-has [qw/files git/] => (
+has [qw/files git run done/] => (
     is => 'rw',
+);
+has changed => (
+    is      => 'rw',
+    default => sub {[]},
 );
 has vcs => (
     is      => 'rw',
     lazy    => 1,
-    default => {
+    default => sub {
         require VCS::Which;
         return VCS::Which->new;
     },
@@ -32,6 +37,26 @@ has vcs => (
 sub watch {
     my ($self) = @_;
 
+    my $notify = AnyEvent::Filesys::Notify->new(
+        dirs => $self->files,
+        cb   => sub {
+            my @changed = @_;
+            $self->changed([ @{ $self->changed }, @changed ]);
+
+            if ( ! $self->done ) {
+                $self->done(
+                    AE::timer 1, 0, sub {
+                        $self->run()->($self->changed());
+                        $self->done(undef);
+                        $self->changed([]);
+                    }
+                );
+            }
+        },
+        parse_events => 1,
+    );
+
+    return AnyEvent::Loop::run();
 }
 
 sub get_files {
