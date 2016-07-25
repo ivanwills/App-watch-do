@@ -17,6 +17,7 @@ use English qw/ -no_match_vars /;
 use FindBin qw/$Bin/;
 use File::stat;
 use Path::Tiny;
+use App::watchdo;
 
 our $VERSION = version->new('0.0.5');
 my ($name)   = $PROGRAM_NAME =~ m{^.*/(.*?)$}mxs;
@@ -43,6 +44,7 @@ sub main {
         \%option,
         'first|f!',
         'watch|w=s@',
+        'dir|d=s@',
         'git|g',
         'sleep|s=i',
         'test|t!',
@@ -67,118 +69,39 @@ sub main {
         pod2usage( -verbose => 1 );
     }
     elsif ( !@ARGV ) {
-        warn "No command to run!\n";
-        pod2usage( -verbose => 1 );
+        warn "Showing files when they change\n";
     }
 
     # do stuff here
-    my %watch;
-    my $vcs;
-    if ( $option{watch} ) {
-        %watch = map { $_ => modified($_) }
-            map { -d $_ ? recurse($_) : $_ }
-            @{ $option{watch} };
-    }
-    if ( $option{git} ) {
-        require VCS::Which;
-        $vcs = VCS::Which->new;
-    }
+    my $watch = App::watchdo->new(
+        dirs  => $option{dir} || [],
+        files => $option{watch} || [],
+        git   => $option{git},
+        wait  => $option{sleep},
+        run   => \&run,
+    );
 
-    my $cmd   = join ' ', @ARGV;
-    my $count = 0;
-    while (1) {
-        my $message = '';
-        my $changed = 0;
-        $count++;
-        if ($vcs) {
-            my $status = $vcs->status('.');
-            %watch = (
-                (
-                    # find any new files to watch
-                    map  { $_ => modified($_) }
-                    map  { chomp $_; $_ }  ## no critic
-                    map  { @{ $status->{$_} } }
-                    grep { $_ ne 'merge' }
-                    keys %{ $status }
-                ),
-                %watch,
-            );
-        }
+    run() if $option{first};
 
-        if (%watch) {
-            if ($option{verbose} > 1) {
-                print "\n";
-            }
-
-            for my $name (sort keys %watch) {
-                my $mod = modified($name);
-                if ( !$watch{$name} ) {
-                    if ($mod) {
-                        $watch{$name} = $mod;
-                    }
-                    else {
-                        delete $watch{$name};
-                    }
-                }
-                elsif ($option{verbose} > 1) {
-                    printf "%-60s %5d (%5d) %10d (%10d)\n", $name, $mod->size, $watch{$name}->size, $mod->mtime, $watch{$name}->mtime;
-                }
-
-                if ( changed($watch{$name}, $mod) ) {
-                    $message .= "\n$name has changed, running command\n"     if $option{verbose};
-                    $message .= "\tModified time $mod (was $watch{$name})\n" if $option{verbose} > 1;
-                    $changed = 1;
-                }
-            }
-
-            if ( $changed || ( $option{first} && $count == 1 ) ) {
-                print "\n";
-                warn "--\n$cmd\n--\n" if $option{verbose} > 2;
-                system $cmd if !$option{test};
-                warn $message if $message;
-                print {*STDERR} "\a\n";
-            }
-
-            # reset modified times (in case $cmd further modifies those files)
-            for my $name (keys %watch) {
-                $watch{$name} = modified($name);
-            }
-        }
-
-        sleep $option{sleep};
-        print {*STDERR} '.' if !$changed;
-    }
+    $watch->watch();
 
     return;
 }
 
-sub recurse {
-    my $dir = path(shift);
-    my @files;
+sub run {
+    my @changed = @_;
+    my $cmd = join ' ', @ARGV;
 
-    for my $child ($dir->children) {
-        if (-d $child) {
-            push @files, recurse($child);
-        }
-        else {
-            push @files, $child;
-        }
+    if ( !@ARGV ) {
+        print join "\n", map { $_->path } @changed;
+        print "\n";
     }
-
-    return @files;
-}
-
-sub changed {
-    my ($last, $now) = @_;
-
-    return ( $last && $now )
-        ? ( $last->mtime != $now->mtime || $last->size != $now->size )
-        : ( !$last && $now );
-}
-
-sub modified {
-    confess "No file passed!\n" if !$_[0];
-    return -e $_[0] && stat $_[0];
+    elsif ( $option{test} ) {
+        warn $cmd;
+    }
+    else {
+        system $cmd;
+    }
 }
 
 __DATA__
