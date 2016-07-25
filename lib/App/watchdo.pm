@@ -10,15 +10,17 @@ use Moo;
 use warnings;
 use version;
 use Carp;
+use List::MoreUtils qw/uniq/;
 use Data::Dumper qw/Dumper/;
 use English qw/ -no_match_vars /;
 use AnyEvent;
 use AnyEvent::Loop;
 use AnyEvent::Filesys::Notify;
+use Path::Tiny;
 
 our $VERSION = version->new('0.0.1');
 
-has [qw/files git run done/] => (
+has [qw/dirs files git run done/] => (
     is => 'rw',
 );
 has changed => (
@@ -38,7 +40,7 @@ sub watch {
     my ($self) = @_;
 
     my $notify = AnyEvent::Filesys::Notify->new(
-        dirs => $self->files,
+        dirs => [ $self->get_dirs ],
         cb   => sub {
             my @changed = @_;
             $self->changed([ @{ $self->changed }, @changed ]);
@@ -59,10 +61,20 @@ sub watch {
     return AnyEvent::Loop::run();
 }
 
+sub get_dirs {
+    my ($self) = @_;
+
+    return uniq sort +(
+        @{ $self->dirs || [] },
+        map {path($_)->parent . ''}
+        $self->get_files,
+    );
+}
+
 sub get_files {
     my ($self) = @_;
 
-    return ( $self->_from_fs, $self->_from_git );
+    return ( $self->_files_from_fs, $self->_files_from_git );
 }
 
 sub _files_from_fs {
@@ -92,7 +104,7 @@ sub _recurse {
 
     for my $child ($dir->children) {
         if (-d $child) {
-            push @files, recurse($child);
+            push @files, _recurse($child);
         }
         else {
             push @files, $child;
