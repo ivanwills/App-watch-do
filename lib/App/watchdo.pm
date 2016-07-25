@@ -6,17 +6,76 @@ package App::watchdo;
 # $Revision$, $HeadURL$, $Date$
 # $Revision$, $Source$, $Date$
 
-use strict;
+use Moo;
 use warnings;
 use version;
 use Carp;
 use Data::Dumper qw/Dumper/;
 use English qw/ -no_match_vars /;
-use base qw/Exporter/;
+use AnyEvent;
+use AnyEvent::Loop;
 
-our $VERSION     = version->new('0.0.5');
-our @EXPORT_OK   = qw//;
-our %EXPORT_TAGS = ();
+our $VERSION = version->new('0.0.1');
+
+has [qw/files git/] => (
+    is => 'rw',
+);
+has vcs => (
+    is      => 'rw',
+    lazy    => 1,
+    default => {
+        require VCS::Which;
+        return VCS::Which->new;
+    },
+);
+
+sub watch {
+    my ($self) = @_;
+
+}
+
+sub get_files {
+    my ($self) = @_;
+
+    return ( $self->_from_fs, $self->_from_git );
+}
+
+sub _files_from_fs {
+    my ($self) = @_;
+
+    return map { -d $_ ? _recurse($_) : $_ }
+        @{ $self->files };
+}
+
+sub _files_from_git {
+    my ($self) = @_;
+
+    return if !$self->git;
+
+    my $status = $self->vcs->status('.');
+    return (
+        map  { chomp $_; $_ }  ## no critic
+        map  { @{ $status->{$_} } }
+        grep { $_ ne 'merge' }
+        keys %{ $status }
+    );
+}
+
+sub _recurse {
+    my $dir = path(shift);
+    my @files;
+
+    for my $child ($dir->children) {
+        if (-d $child) {
+            push @files, recurse($child);
+        }
+        else {
+            push @files, $child;
+        }
+    }
+
+    return @files;
+}
 
 1;
 
@@ -71,7 +130,7 @@ Ivan Wills - (ivan.wills@gmail.com)
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2014 Ivan Wills (14 Mullion Close, Hornsby Heights, NSW Australia 2077).
+Copyright (c) 2014-2016 Ivan Wills (14 Mullion Close, Hornsby Heights, NSW Australia 2077).
 All rights reserved.
 
 This module is free software; you can redistribute it and/or modify it under
