@@ -46,19 +46,30 @@ sub watch {
             $self->changed([ @{ $self->changed }, @changed ]);
 
             if ( ! $self->done ) {
-                $self->done(
-                    AE::timer 1, 0, sub {
-                        $self->run()->($self->changed());
-                        $self->done(undef);
-                        $self->changed([]);
-                    }
-                );
+                $self->done( AE::timer 1, 0, sub { $self->doit() } );
             }
         },
         parse_events => 1,
     );
 
     return AnyEvent::Loop::run();
+}
+
+sub doit {
+    my ($self) = @_;
+    my %files = map { $_ => 1 } $self->get_files();
+    my %dirs  = map { $_ => 1 } @{ $self->dirs() };
+    my %seen;
+
+    my @monitored;
+    for my $changed (@{ $self->changed() }) {
+        my $path = $changed->path;
+        push @monitored, $changed if !$seen{$path}++ || $files{$path} || $dirs{$path};
+    }
+
+    $self->run()->(@monitored);
+    $self->done(undef);
+    $self->changed([]);
 }
 
 sub get_dirs {
