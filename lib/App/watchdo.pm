@@ -27,6 +27,10 @@ has changed => (
     is      => 'rw',
     default => sub {[]},
 );
+has wait => (
+    is      => 'rw',
+    default => 1,
+);
 has vcs => (
     is      => 'rw',
     lazy    => 1,
@@ -46,7 +50,7 @@ sub watch {
             $self->changed([ @{ $self->changed }, @changed ]);
 
             if ( ! $self->done ) {
-                $self->done( AE::timer 1, 0, sub { $self->doit() } );
+                $self->done( AE::timer $self->wait, 0, sub { $self->doit() } );
             }
         },
         parse_events => 1,
