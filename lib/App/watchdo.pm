@@ -18,7 +18,7 @@ use AnyEvent::Loop;
 use AnyEvent::Filesys::Notify;
 use Path::Tiny;
 
-our $VERSION = version->new('0.0.1');
+our $VERSION = version->new('0.0.6');
 
 has [qw/dirs files git run done/] => (
     is => 'rw',
@@ -139,7 +139,7 @@ App::watchdo - Run a command when watched files change
 
 =head1 VERSION
 
-This documentation refers to App::watchdo version 0.0.5
+This documentation refers to App::watchdo version 0.0.6
 
 =head1 SYNOPSIS
 

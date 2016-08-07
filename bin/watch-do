@@ -19,7 +19,7 @@ use File::stat;
 use Path::Tiny;
 use App::watchdo;
 
-our $VERSION = version->new('0.0.5');
+our $VERSION = version->new('0.0.6');
 my ($name)   = $PROGRAM_NAME =~ m{^.*/(.*?)$}mxs;
 
 my %option = (
@@ -112,7 +112,7 @@ watch-do - Run a command when watched files change
 
 =head1 VERSION
 
-This documentation refers to watch-do version 0.0.5
+This documentation refers to watch-do version 0.0.6
 
 =head1 SYNOPSIS
 

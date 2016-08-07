@@ -1,5 +1,21 @@
 Revision history for App-watchdo
 
+0.0.6   2016-08-07
+        Updating for release of version 0.0.6
+        Added missing documentation (Ivan Wills)
+        Added skipping more files (Ivan Wills)
+        Added missing dependencies (Ivan Wills)
+        Switched to using new lib (Ivan Wills)
+        Made wait time configurable (Ivan Wills)
+        Refactored out changed file action (Ivan Wills)
+        Using inputs correctly (Ivan Wills)
+        Implemented watching (Ivan Wills)
+        Starting to implement event driven watch (Ivan Wills)
+        Added vtide config (Ivan Wills)
+        Adding missing argument documentation (Ivan Wills)
+        Updated license date (Ivan Wills)
+        Cleaned up indentation (Ivan Wills)
+
 0.0.5   2015-12-12
         Updating for release of version 0.0.5
         Added dependency to requires (Ivan Wills)
