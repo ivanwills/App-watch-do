@@ -160,6 +160,46 @@ This documentation refers to App::watchdo version 0.0.5
 
 =head1 SUBROUTINES/METHODS
 
+=over 4
+
+=item C<doit ()>
+
+Runs the requested command when a file has changed
+
+=item C<get_dirs ()>
+
+Gets the unique list of directories to look in
+
+=item C<get_files ()>
+
+Gets all the files to be watched
+
+=item C<watch ()>
+
+Runs the event loop to watch for changes in files.
+
+=back
+
+=head1 ATTRIBUTES
+
+=over 4
+
+=item C<changed ()>
+
+=item C<done ()>
+
+=item C<dirs ()>
+
+=item C<files ()>
+
+=item C<git ()>
+
+=item C<run ()>
+
+=item C<wait ()>
+
+=back
+
 =head1 DIAGNOSTICS
 
 =head1 CONFIGURATION AND ENVIRONMENT
