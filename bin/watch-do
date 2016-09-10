@@ -92,6 +92,8 @@ sub run {
     my @changed = @_;
     my $cmd = join ' ', @ARGV;
 
+    warn "Files changed!\n" if $option{verbose};
+
     if ( !@ARGV ) {
         print join "\n", map { $_->path } @changed;
         print "\n";
@@ -121,7 +123,7 @@ This documentation refers to watch-do version 0.0.6
 
  OPTIONS:
   cmd               Command to run when file changes
-  -w --watch[=]file File to be watched for changes
+  -w --watch[=]file File or Directory to be watched for changes
   -g --git          Use git to find what to watch (ie monitor files that git
                     see have changed)
   -f --first        Execute the cmd on the first run as well as when files
