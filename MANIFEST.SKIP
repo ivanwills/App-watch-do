@@ -96,4 +96,5 @@ errors.err
 vim.sh
 vrc.yml
 tmp*
-temp/*
+temp*
+.vtide*
