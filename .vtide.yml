@@ -1,16 +1,14 @@
 --- 
 count: 4
-default: 
+default:
   restart: 0
   wait: 0
-editor: 
-  files: 
-    eg: 
-      - some-file.eg
 name: watch-do
-terminals: 
-  2: []
-
+terminals:
+  2:
+    edit:
+      - bin/watch-do
+      - lib/App/watchdo.pm
   3: []
 
   4: []
