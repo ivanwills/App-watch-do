@@ -20,9 +20,7 @@ use Path::Tiny;
 
 our $VERSION = version->new('0.0.6');
 
-has [qw/dirs files git run done/] => (
-    is => 'rw',
-);
+has [qw/dirs files git run done/] => ( is => 'rw' );
 has changed => (
     is      => 'rw',
     default => sub {[]},
