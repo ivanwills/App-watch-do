@@ -127,7 +127,8 @@ This documentation refers to watch-do version 0.0.7
    watch-do --version
 
  OPTIONS:
-  cmd               Command to run when file changes
+  cmd               Command to run when watched file(s) change. If not
+                    supplied this will just show the changed files.
   -w --watch[=]file File or Directory to be watched for changes
   -g --git          Use git to find what to watch (i.e. monitor git status to
                     see files have changed and add them to the watch)
@@ -148,6 +149,9 @@ This documentation refers to watch-do version 0.0.7
      --man          Prints the full documentation for watch-do
 
 =head1 DESCRIPTION
+
+C<watch-do> watches for file changes and runs a supplied command or prints
+those files that have changed.
 
 =head1 SUBROUTINES/METHODS
 
