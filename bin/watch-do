@@ -120,8 +120,11 @@ This documentation refers to watch-do version 0.0.7
 
 =head1 SYNOPSIS
 
-   watch-do [option]
-   watch-do -w file1 [-w file2 ...] [--] cmd
+   watch-do -w file1 [-w file2 ...] [(-e|--exclude) regexp] [-f|--first] [(-s|--sleep) seconds] [--] [cmd]
+   watch-do (-g|--git) [(-e|--exclude) regexp] [-f|--first] [(-s|--sleep) seconds] [--] [cmd]
+   watch-do --help
+   watch-do --man
+   watch-do --version
 
  OPTIONS:
   cmd               Command to run when file changes
