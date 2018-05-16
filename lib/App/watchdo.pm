@@ -20,8 +20,8 @@ use Path::Tiny;
 
 our $VERSION = version->new('0.0.7');
 
-has [qw/dirs files git run done/] => ( is => 'rw' );
-has changed => (
+has [qw/git run done/] => ( is => 'rw' );
+has [qw/dirs files exclude changed/] => (
     is      => 'rw',
     default => sub {[]},
 );
@@ -66,10 +66,17 @@ sub doit {
     my @monitored;
     for my $changed (@{ $self->changed() }) {
         my $path = $changed->path;
-        push @monitored, $changed if !$seen{$path}++ || $files{$path} || $dirs{$path};
+        push @monitored, $changed if (
+            !$seen{$path}++
+            || $files{$path}
+            || $dirs{$path}
+        ) && (
+            ! @{ $self->exclude }
+            || ! grep { $path =~ /$_/ } @{ $self->exclude }
+        );
     }
 
-    $self->run()->(@monitored);
+    $self->run()->(@monitored) if @monitored;
     $self->done(undef);
     $self->changed([]);
 }
