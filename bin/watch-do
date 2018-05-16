@@ -46,6 +46,7 @@ sub main {
         'watch|w=s@',
         'dir|d=s@',
         'git|g',
+        'exclude|e=s@',
         'sleep|s=i',
         'test|t!',
         'verbose|v+',
@@ -74,11 +75,12 @@ sub main {
 
     # do stuff here
     my $watch = App::watchdo->new(
-        dirs  => $option{dir} || [],
-        files => $option{watch} || [],
-        git   => $option{git},
-        wait  => $option{sleep},
-        run   => \&run,
+        dirs    => $option{dir} || [],
+        files   => $option{watch} || [],
+        git     => $option{git},
+        exclude => $option{exclude} || [],
+        wait    => $option{sleep},
+        run     => \&run,
     );
 
     run() if $option{first};
@@ -126,6 +128,9 @@ This documentation refers to watch-do version 0.0.7
   -w --watch[=]file File or Directory to be watched for changes
   -g --git          Use git to find what to watch (i.e. monitor git status to
                     see files have changed and add them to the watch)
+  -e --exclude[=]regexp
+                    Exclude changes in files that match is regeular expression
+                    You can specify multiple times for more regexps.
   -f --first        Execute the cmd on the first run as well as when files
                     change.
   -s --sleep[=]int  Time in seconds to sleep between checking for changes
