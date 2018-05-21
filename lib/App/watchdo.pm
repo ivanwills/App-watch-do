@@ -18,7 +18,7 @@ use AnyEvent::Loop;
 use AnyEvent::Filesys::Notify;
 use Path::Tiny;
 
-our $VERSION = version->new('0.0.7');
+our $VERSION = version->new('0.1.0');
 
 has [qw/git run done/] => ( is => 'rw' );
 has [qw/dirs files exclude changed/] => (
@@ -144,7 +144,7 @@ App::watchdo - Run a command when watched files change
 
 =head1 VERSION
 
-This documentation refers to App::watchdo version 0.0.7
+This documentation refers to App::watchdo version 0.1.0
 
 =head1 SYNOPSIS
 
