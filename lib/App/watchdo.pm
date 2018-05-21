@@ -189,19 +189,37 @@ Runs the event loop to watch for changes in files.
 
 =over 4
 
-=item C<changed ()>
+=item C<changed>
 
-=item C<done ()>
+Array of changed files
 
-=item C<dirs ()>
+=item C<done>
 
-=item C<files ()>
+Stores callback method for alerting of changed files
 
-=item C<git ()>
+=item C<dirs>
 
-=item C<run ()>
+Stores the directories that are being monitored
 
-=item C<wait ()>
+=item C<files>
+
+Stores the files that are being monitored
+
+=item C<exclude>
+
+Stores a list of regexps of files that should not trigger changed events
+
+=item C<git>
+
+Flag for using git to find files that should be monitored
+
+=item C<run>
+
+The function to be called when file are changed
+
+=item C<wait>
+
+Time to wait for changes to settle to changed events are not filed too quickly
 
 =back
 
