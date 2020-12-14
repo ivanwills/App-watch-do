@@ -30,7 +30,7 @@ my $builder = Module::Build->new(
     meta_merge => {
         resources => {
             repository => 'git://github.com/ivanwills/App-watch-do.git',
-            bugtracker => 'http://rt.cpan.org/NoAuth/Bugs.html?Dist=App::watchdo',
+            bugtracker => 'https://rt.cpan.org/NoAuth/Bugs.html?Dist=App::watchdo',
         },
     },
 );
